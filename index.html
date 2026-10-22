@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="租号管家">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="租号管家">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="theme-color" content="#1a1d29">
+<title>游戏租号工作台</title>
+<style>
+:root{
+  --bg:#0f1117; --bg2:#171a23; --card:#1e2230; --card2:#252a3a;
+  --line:#2d3345; --text:#e8eaf0; --sub:#8b93a7;
+  --green:#3ddc97; --red:#ff5c7c; --amber:#ffb84d; --blue:#5b9cff;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.5;
+  padding-bottom:80px; overflow-x:hidden;
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px}
+
+/* 顶部 */
+header{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(180deg,#1a1d29 0%,#151822 100%);
+  border-bottom:1px solid var(--line);
+  padding:14px 0 10px;
+}
+.htop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font-size:19px;font-weight:700;letter-spacing:.5px}
+h1 span{font-size:12px;color:var(--sub);font-weight:400;margin-left:6px}
+.hactions{display:flex;gap:8px}
+.iconbtn{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);color:var(--text);font-size:15px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.iconbtn:active{background:var(--card2)}
+
+/* 统计条 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.stat{
+  background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:9px 6px;text-align:center;
+}
+.stat .v{font-size:17px;font-weight:700;line-height:1.2}
+.stat .k{font-size:10.5px;color:var(--sub);margin-top:2px}
+.stat.g .v{color:var(--green)}
+.stat.a .v{color:var(--amber)}
+.stat.b .v{color:var(--blue)}
+
+/* 筛选 */
+.filters{display:flex;gap:7px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;
+  background:var(--card);border:1px solid var(--line);color:var(--sub);cursor:pointer;
+  white-space:nowrap;
+}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+
+/* 搜索 */
+.search{
+  width:100%;margin-top:10px;padding:10px 14px;border-radius:11px;
+  background:var(--card);border:1px solid var(--line);color:var(--text);
+  font-size:14px;outline:none;font-family:inherit;
+}
+.search::placeholder{color:#5a6275}
+.search:focus{border-color:var(--blue)}
+
+/* 账号卡片 */
+.list{margin-top:14px;display:flex;flex-direction:column;gap:11px}
+.acct{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;transition:transform .12s;
+  border-left:4px solid var(--green);
+}
+.acct:active{transform:scale(.985)}
+.acct.rented{border-left-color:var(--red)}
+.acct.due{border-left-color:var(--amber)}
+.acct.empty{
+  text-align:center;padding:44px 20px;color:var(--sub);
+  border-left:1px solid var(--line);
+}
+.acct.empty .big{font-size:32px;margin-bottom:8px;opacity:.5}
+
+.ahead{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 14px 10px}
+.aname{font-size:16.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tag{
+  font-size:10.5px;padding:2px 8px;border-radius:6px;font-weight:600;
+  background:rgba(61,220,151,.15);color:var(--green);
+}
+.tag.r{background:rgba(255,92,124,.15);color:var(--red)}
+.tag.d{background:rgba(255,184,77,.15);color:var(--amber)}
+.plat{font-size:11px;color:var(--sub);margin-top:3px}
+.amen{
+  width:30px;height:30px;border-radius:9px;background:var(--card2);
+  display:flex;align-items:center;justify-content:center;color:var(--sub);
+  font-size:14px;cursor:pointer;flex-shrink:0;border:none;
+}
+.amen:active{background:var(--line)}
+
+.ainfo{padding:0 14px 12px;display:flex;flex-direction:column;gap:5px}
+.row{display:flex;justify-content:space-between;font-size:13px;gap:10px}
+.row .k{color:var(--sub);flex-shrink:0}
+.row .v{text-align:right;font-weight:500}
+.row .v.money{color:var(--green);font-weight:700}
+.row .v.warn{color:var(--amber)}
+
+/* 进度条 */
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin:3px 0 2px}
+.bar i{display:block;height:100%;background:var(--green);border-radius:2px;transition:width .4s}
+.bar i.w{background:var(--amber)}
+.bar i.o{background:var(--red)}
+
+/* 操作按钮 */
+.aops{display:flex;border-top:1px solid var(--line)}
+.aops button{
+  flex:1;padding:11px;background:transparent;border:none;color:var(--blue);
+  font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;
+  border-right:1px solid var(--line);
+}
+.aops button:last-child{border-right:none}
+.aops button:active{background:var(--card2)}
+.aops button.del{color:var(--red);flex:0 0 56px}
+
+/* 悬浮按钮 */
+.fab{
+  position:fixed;right:18px;bottom:22px;width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,#5b9cff,#3d7bff);color:#fff;border:none;
+  font-size:28px;line-height:1;box-shadow:0 8px 24px rgba(91,156,255,.4);
+  cursor:pointer;z-index:60;display:flex;align-items:center;justify-content:center;
+}
+.fab:active{transform:scale(.93)}
+
+/* 弹窗 */
+.mask{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.mask.on{display:flex}
+.sheet{
+  background:var(--bg2);width:100%;max-width:560px;border-radius:20px 20px 0 0;
+  padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  max-height:92vh;overflow-y:auto;animation:up .25s ease;
+}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.sheet h2{font-size:17px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.sheet h2 button{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;line-height:1}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:6px;font-weight:500}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px 13px;border-radius:10px;background:var(--card);
+  border:1px solid var(--line);color:var(--text);font-size:15px;outline:none;
+  font-family:inherit;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.submit{
+  width:100%;padding:14px;border-radius:12px;border:none;margin-top:6px;
+  background:linear-gradient(135deg,#5b9cff,#3d7bff);color:#fff;
+  font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.submit:active{opacity:.85}
+.submit.gray{background:var(--card2);color:var(--sub)}
+.hint{font-size:12px;color:var(--sub);margin-top:-6px;margin-bottom:12px;line-height:1.5}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:rgba(30,34,48,.97);border:1px solid var(--line);
+  padding:12px 22px;border-radius:11px;font-size:14px;z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;
+}
+.toast.on{opacity:1}
+
+.emptyhint{text-align:center;padding:50px 20px;color:var(--sub);font-size:14px}
+
+/* 任务选择器 */
+.taskpick{display:flex;flex-wrap:wrap;gap:8px}
+.taskpick label{
+  display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:10px;
+  background:var(--card);border:1px solid var(--line);font-size:13.5px;
+  cursor:pointer;color:var(--sub);transition:all .15s;
+}
+.taskpick label.on{background:rgba(91,156,255,.15);border-color:var(--blue);color:var(--blue);font-weight:600}
+.taskpick input{display:none}
+.taskpick .tp{position:relative;user-select:none}
+.taskpick .tp.on::before{content:'✓';font-weight:700}
+
+/* 每日任务面板 */
+.taskpanel{
+  display:flex;gap:7px;overflow-x:auto;padding:11px 0 2px;scrollbar-width:none;
+}
+.taskpanel::-webkit-scrollbar{display:none}
+.tcard{
+  flex:0 0 auto;min-width:96px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .15s;
+  border-bottom:3px solid var(--line);
+}
+.tcard:active{transform:scale(.96)}
+.tcard .tn{font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}
+.tcard .ts{font-size:11px;color:var(--sub);margin-top:4px;display:flex;align-items:center;gap:4px}
+.tcard .dot{width:7px;height:7px;border-radius:50%;background:var(--line);flex-shrink:0}
+.tcard.done{border-bottom-color:var(--green);background:rgba(61,220,151,.07)}
+.tcard.done .dot{background:var(--green)}
+.tcard.done .ts{color:var(--green)}
+.tcard.pending{border-bottom-color:var(--amber)}
+.tcard.pending .dot{background:var(--amber)}
+.tcard.pending .ts{color:var(--amber)}
+.tcard.todo{border-bottom-color:var(--line)}
+.tcard.todo .ts{color:var(--sub)}
+
+.taskbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px 0;font-size:12px;color:var(--sub);
+}
+.taskbar b{color:var(--green)}
+.taskbar .reset{color:var(--blue);cursor:pointer;font-size:12px}
+
+/* 计费方式选择 */
+.unitpick{display:flex;gap:9px}
+.uchip{
+  flex:1;text-align:center;padding:11px;border-radius:11px;font-size:14.5px;
+  background:var(--card);border:1px solid var(--line);color:var(--sub);
+  cursor:pointer;font-weight:500;transition:all .15s;
+}
+.uchip.on{background:rgba(91,156,255,.15);border-color:var(--blue);color:var(--blue);font-weight:700}
+/* 快捷时长 */
+.quickrow{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 13px}
+.qbtn{
+  padding:7px 13px;border-radius:9px;background:var(--card);border:1px solid var(--line);
+  font-size:13px;color:var(--blue);cursor:pointer;
+}
+.qbtn:active{background:rgba(91,156,255,.15)}
+
+/* 数据管理面板 */
+.warnbox{
+  background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.35);
+  color:#ffd08a;border-radius:11px;padding:11px 13px;font-size:12.5px;
+  line-height:1.6;margin-bottom:16px;
+}
+.warnbox b{color:#ffb84d}
+.secTitle{
+  font-size:13px;font-weight:700;color:var(--blue);
+  margin:18px 0 10px;padding-left:9px;border-left:3px solid var(--blue);
+}
+
+/* 配置标签（标配/满配） */
+.packtag{
+  font-size:10.5px;padding:2px 8px;border-radius:6px;font-weight:600;
+  cursor:pointer;user-select:none;display:inline-block;
+}
+.packtag.std{background:rgba(91,156,255,.16);color:var(--blue)}
+.packtag.full{background:rgba(255,184,77,.16);color:var(--amber)}
+.packtag.custom{background:rgba(61,220,151,.16);color:var(--green)}
+.packtag.none{background:transparent;color:#5a6275;border:1px dashed var(--line);font-weight:400}
+
+/* 游戏分数 */
+.scorebox{
+  display:flex;align-items:center;gap:8px;margin:2px 0 3px;
+}
+.scoreval{
+  font-size:15px;font-weight:700;color:var(--blue);font-family:ui-monospace,monospace;
+}
+.scoreedit{
+  flex:1;padding:6px 10px;border-radius:8px;background:var(--card2);
+  border:1px solid var(--line);color:var(--text);font-size:13px;
+  outline:none;font-family:inherit;min-width:0;
+}
+.scoreedit:focus{border-color:var(--blue)}
+.scoresub{
+  padding:6px 12px;border-radius:8px;background:rgba(91,156,255,.15);
+  color:var(--blue);font-size:12.5px;font-weight:600;cursor:pointer;border:none;
+  flex-shrink:0;
+}
+.scoresub:active{background:var(--blue);color:#fff}
+
+/* 复制按钮 */.copybtn{
+  display:inline-block;margin-left:8px;padding:2px 10px;border-radius:7px;
+  background:rgba(91,156,255,.15);color:var(--blue);font-size:11.5px;
+  font-weight:600;cursor:pointer;
+}
+.copybtn:active{background:var(--blue);color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="htop">
+      <h1>租号工作台<span id="today"></span></h1>
+      <div class="hactions">
+        <button class="iconbtn" onclick="openData()" title="数据管理">⇅</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat b"><div class="v" id="sTotal">0</div><div class="k">账号总数</div></div>
+      <div class="stat g"><div class="v" id="sRent">0</div><div class="k">在租中</div></div>
+      <div class="stat a"><div class="v" id="sDue">0</div><div class="k">即将到期</div></div>
+      <div class="stat"><div class="v" id="sTask">0</div><div class="k">任务未完成</div></div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <input class="search" id="search" placeholder="搜索账号 / 租客 / 备注…">
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="list" id="list"></div>
+  <div id="incomeCard"></div>
+</div>
+
+<button class="fab" onclick="openEdit(null)">+</button>
+
+<!-- 编辑账号弹窗 -->
+<div class="mask" id="mEdit">
+  <div class="sheet">
+    <h2><span id="editTitle">新增账号</span><button onclick="closeAll()">×</button></h2>
+
+    <div class="field">
+      <label>账号名称 *</label>
+      <input id="fName" placeholder="如：王者号-01">
+    </div>
+    <div class="field">
+      <label>当前状态</label>
+      <select id="fStatus" onchange="toggleRentFields()">
+        <option value="idle">空闲可租</option>
+        <option value="rented">出租中</option>
+      </select>
+    </div>
+
+    <div id="rentFields">
+      <div class="hint">填写租客与租期信息，到期会自动提醒。</div>
+      <div class="field">
+        <label>租客</label>
+        <input id="fTenant" placeholder="租客昵称 / 联系方式">
+      </div>
+      <div class="f2">
+        <div class="field">
+          <label>起租日</label>
+          <input id="fStart" type="date">
+        </div>
+        <div class="field">
+          <label>到期日</label>
+          <input id="fEnd" type="date">
+        </div>
+      </div>
+    </div>
+
+    <div class="f2">
+      <div class="field">
+        <label>账号密码（用于一键复制）</label>
+        <input id="fPwd" placeholder="账号密码，可留空">
+      </div>
+      <div class="field">
+        <label>手机号（用于一键复制）</label>
+        <input id="fPhone" type="tel" inputmode="numeric" placeholder="账号绑定手机，可留空">
+      </div>
+    </div>
+
+    <div class="f2">
+      <div class="field">
+        <label>租金（元，可选）</label>
+        <input id="fPrice" type="number" inputmode="decimal" placeholder="不填则不记录">
+      </div>
+      <div class="field">
+        <label>押金（元，可选）</label>
+        <input id="fDeposit" type="number" inputmode="decimal" placeholder="不填则不记录">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>每日任务（勾选该账号需要跟踪的项）</label>
+      <div class="taskpick" id="fTasks"></div>
+    </div>
+
+    <div class="field">
+      <label>来源 / 渠道</label>
+      <input id="fChannel" placeholder="闲鱼 / 熟人介绍">
+    </div>
+    <div class="field">
+      <label>备注</label>
+      <textarea id="fNote" rows="2" placeholder="账号密码提示、其他说明…"></textarea>
+    </div>
+
+    <button class="submit" onclick="saveAcct()">保存</button>
+  </div>
+</div>
+
+<!-- 收租弹窗 -->
+<div class="mask" id="mRent">
+  <div class="sheet">
+    <h2><span>登记出租</span><button onclick="closeAll()">×</button></h2>
+    <div class="hint" id="rentWho"></div>
+    <div class="field">
+      <label>租客</label>
+      <input id="rTenant" placeholder="租客昵称">
+    </div>
+    <div class="field">
+      <label>计费方式</label>
+      <div class="unitpick">
+        <div class="uchip on" id="uDay" onclick="setUnit('day')">按天租</div>
+        <div class="uchip" id="uHour" onclick="setUnit('hour')">按小时租</div>
+      </div>
+    </div>
+    <div class="f2" id="dayRow">
+      <div class="field"><label>起租日</label><input id="rStart" type="date"></div>
+      <div class="field"><label>到期日</label><input id="rEnd" type="date"></div>
+    </div>
+    <div id="hourRow" style="display:none">
+      <div class="f2">
+        <div class="field"><label>起租日期</label><input id="rStartD" type="date"></div>
+        <div class="field"><label>起租时间</label><input id="rStartT" type="time"></div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>到期日期</label><input id="rEndD" type="date"></div>
+        <div class="field"><label>到期时间</label><input id="rEndT" type="time"></div>
+      </div>
+      <div class="quickrow">
+        <span class="qbtn" onclick="quickHour(5)">+5小时</span>
+        <span class="qbtn" onclick="quickHour(12)">+12小时</span>
+        <span class="qbtn" onclick="quickHour(24)">+24小时</span>
+      </div>
+    </div>
+    <button class="submit" onclick="saveRent()">确认出租</button>
+  </div>
+</div>
+
+<!-- 数据管理弹窗 -->
+<div class="mask" id="mData">
+  <div class="sheet">
+    <h2><span>数据管理</span><button onclick="closeAll()">×</button></h2>
+    <div class="warnbox" id="warnLocal">
+      ⚠️ 数据只存在<b>这台设备的这个浏览器</b>里。换手机、换浏览器、清理缓存都会看不到，请定期导出备份。
+    </div>
+
+    <div class="secTitle">☁️ 云同步（跨设备自动同步）</div>
+    <div id="cloudBox"></div>
+
+    <div class="secTitle">☁️ 与朋友一起编辑（跨手机）</div>
+    <div class="hint" style="margin-top:0">
+      用 GitHub Gist 做同步（免费、长期有效、安卓苹果通用）。<br>
+      创建方法：登录 gist.github.com → 新建一个 Gist（内容随便填个 <code>{}</code>，文件名 <code>rent.json</code>，选 Secret）→ 创建后从网址里取出 Gist ID 和你的 Token 填到下面。
+    </div>
+    <div class="field">
+      <label>Gist ID</label>
+      <input id="gistId" placeholder="如 a1b2c3d4e5f6..." onchange="saveGistCfg()">
+    </div>
+    <div class="field">
+      <label>GitHub Token（需 gist 权限，只存本机）</label>
+      <input id="gistToken" type="password" placeholder="ghp_..." onchange="saveGistCfg()">
+    </div>
+    <div class="field">
+      <label>你的设备名（用于区分谁改的）</label>
+      <input id="gistName" placeholder="如 iPhone-王 / 安卓-朋友" onchange="saveGistCfg()">
+    </div>
+    <button class="submit" onclick="gistPush(true)" id="gistPushBtn">上传到云端</button>
+    <button class="submit gray" style="margin-top:9px" onclick="gistPull(true)" id="gistPullBtn">从云端拉取</button>
+    <button class="submit gray" style="margin-top:9px" onclick="gistAuto()" id="gistAutoBtn">开启自动同步</button>
+    <div class="hint" id="gistStatus" style="margin:10px 0 0">未启用</div>
+
+    <div class="secTitle">备份码（换设备最省事）</div>
+    <div class="hint" style="margin-top:0">
+      点“生成备份码”得到一串文字，复制发到新设备，粘贴进下面的框导入即可。
+    </div>
+    <button class="submit" onclick="makeCode()">生成备份码</button>
+    <div class="field" id="codeOut" style="display:none">
+      <textarea id="codeBox" rows="4" readonly style="font-size:11px;user-select:text;-webkit-user-select:text"></textarea>
+      <div class="quickrow" style="margin:8px 0 0">
+        <span class="qbtn" onclick="copyCode()">复制备份码</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>粘贴备份码导入</label>
+      <textarea id="codeIn" rows="3" placeholder="把备份码粘贴到这里，再点下方导入" style="font-size:11px"></textarea>
+    </div>
+    <button class="submit gray" onclick="importCode()">用备份码导入</button>
+
+    <div class="secTitle">文件备份</div>
+    <button class="submit gray" onclick="exportJSON()">导出备份文件（.json）</button>
+    <button class="submit gray" style="margin-top:10px" onclick="document.getElementById('impFile').click()">导入备份文件</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="submit gray" style="margin-top:10px" onclick="exportCSV()">导出表格（Excel 可打开）</button>
+    <button class="submit gray" style="margin-top:10px;color:var(--red)" onclick="clearAll()">清空所有数据</button>
+  </div>
+</div>
+
+<!-- 手动复制兜底弹窗 -->
+<div class="mask" id="mCopy">
+  <div class="sheet">
+    <h2><span>复制账号密码</span><button onclick="closeAll()">×</button></h2>
+    <div class="hint">当前浏览器限制了一键复制，请长按下方文字 → <b>全选 / 拷贝</b></div>
+    <div class="field">
+      <textarea id="copyBox" rows="3" readonly style="user-select:text;-webkit-user-select:text;font-size:16px"></textarea>
+    </div>
+    <button class="submit" onclick="selectCopyBox()">重新全选</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='game_rent_workbench_v1';
+// 任务类型：key 唯一标识，name 显示名，def 是否默认启用
+const TASK_TYPES=[
+  {key:'coin1',  name:'游戏币一档', def:true},
+  {key:'coin2',  name:'游戏币二档', def:true},
+  {key:'event',  name:'活动任务',  def:true},
+  {key:'daily',  name:'日常任务',  def:false},
+  {key:'guild',  name:'公会任务',  def:false},
+];
+let DB=[];
+let filter='all';
+let editId=null, rentId=null;
+let taskAcctId=null;   // 当前展开每日任务的账号
+
+
+/* ---------- 工具 ---------- */
+function today(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function fmt(d){
+  // 必须用本地时间，不能用 toISOString（UTC 会差一天）
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function parse(s){if(!s)return null;const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
+function days(a,b){return Math.round((b-a)/86400000)}
+// 解析日期或日期时间："2026-10-04" 或 "2026-10-04T14:30"
+function parseDT(s){
+  if(!s)return null;
+  if(s.includes('T')){
+    const [d,t]=s.split('T');
+    const [Y,M,D]=d.split('-').map(Number);
+    const [h,m]=(t||'00:00').split(':').map(Number);
+    return new Date(Y,M-1,D,h||0,m||0);
+  }
+  return parse(s);
+}
+// 当前精确时间（分钟级）
+function nowMin(){
+  const d=new Date();
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours(),d.getMinutes());
+}
+function isHour(a){return a&&a.unit==='hour'}
+// 距到期分钟数（负数=已超期）
+function minsLeft(a){const e=parseDT(a.end);if(!e)return null;return Math.round((e-nowMin())/60000)}
+// 把分钟差转成人话
+function humanDelta(mins){
+  const abs=Math.abs(mins);
+  const d=Math.floor(abs/1440), h=Math.floor((abs%1440)/60), m=abs%60;
+  let s='';
+  if(d) s+=d+'天';
+  if(h) s+=h+'小时';
+  if(!d&&m) s+=m+'分钟';
+  return s||'0分钟';
+}
+function money(n){return '¥'+(Number(n)||0).toFixed(2)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function toast(t){
+  const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),1600);
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+/* ---------- 每日任务 ---------- */
+// 每个账号的任务记录结构： a.tasks = { login:{'2026-10-03':true}, coin:{...} }
+// 只保留最近 60 天，避免数据无限膨胀
+function taskTypes(a){
+  return TASK_TYPES.filter(t=>(a.taskTypes||TASK_TYPES.filter(x=>x.def).map(x=>x.key)).includes(t.key));
+}
+function isDone(a,typeKey,day){
+  return !!(a.tasks && a.tasks[typeKey] && a.tasks[typeKey][day]);
+}
+function todayDone(a){
+  return taskTypes(a).filter(t=>isDone(a,t.key,fmt(today()))).length;
+}
+function toggleTask(id,typeKey){
+  const a=DB.find(x=>x.id===id);
+  if(!a)return;
+  const day=fmt(today());
+  a.tasks=a.tasks||{};
+  a.tasks[typeKey]=a.tasks[typeKey]||{};
+  a.tasks[typeKey][day]=!a.tasks[typeKey][day];
+  if(!a.tasks[typeKey][day]) delete a.tasks[typeKey][day];
+  // 清理 60 天前的记录
+  const lim=fmt(new Date(today().getTime()-60*86400000));
+  Object.keys(a.tasks).forEach(k=>{
+    Object.keys(a.tasks[k]).forEach(d=>{ if(d<lim) delete a.tasks[k][d] });
+    if(!Object.keys(a.tasks[k]).length) delete a.tasks[k];
+  });
+  a.updated=Date.now();
+  save();render();
+  const st=isDone(a,typeKey,day);
+  toast((TASK_TYPES.find(t=>t.key===typeKey)||{}).name+(st?' 已完成':' 取消'));
+}
+// 连续完成天数（所有启用任务都完成的连续天数）
+function streak(a){
+  const types=taskTypes(a);
+  if(!types.length)return 0;
+  let n=0;
+  for(let i=0;i<60;i++){
+    const d=fmt(new Date(today().getTime()-i*86400000));
+    if(types.every(t=>isDone(a,t.key,d))) n++;
+    else break;
+  }
+  return n;
+}
+
+/* ---------- 存取 ---------- */
+function load(){
+  try{DB=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){DB=[]}
+  // 兼容旧版本：「游戏币任务」拆分为一档/二档，旧记录迁移到一档
+  let migrated=false;
+  DB.forEach(a=>{
+    if(a.taskTypes && a.taskTypes.includes('coin') && !a.taskTypes.includes('coin1')){
+      a.taskTypes=a.taskTypes.map(k=>k==='coin'?'coin1':k);
+      migrated=true;
+    }
+    if(a.tasks && a.tasks.coin && !a.tasks.coin1){
+      a.tasks.coin1=a.tasks.coin;
+      delete a.tasks.coin;
+      migrated=true;
+    }
+    if(!a.unit) a.unit='day';
+  });
+  if(migrated){
+    localStorage.setItem(KEY,JSON.stringify(DB));
+  }
+}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(DB));
+  touchWrite();
+  schedulePush();
+  // 若已开启 Gist 自动同步，改动后延迟上传
+  if(gistTimer&&gistCfg().id&&gistCfg().tk){
+    clearTimeout(window._gpush);
+    window._gpush=setTimeout(()=>gistPush(false),2500);
+  }
+}
+
+/* ---------- 状态计算 ---------- */
+function statusOf(a){
+  if(a.status!=='rented') return {key:'idle',label:'空闲可租',cls:''};
+  const end=parseDT(a.end);
+  if(!end) return {key:'rented',label:'出租中',cls:'rented'};
+  // 按小时计租：用分钟级精度判断
+  if(isHour(a)){
+    const m=minsLeft(a);
+    if(m==null) return {key:'rented',label:'出租中',cls:'rented'};
+    if(m<0)  return {key:'over',label:'已超期'+humanDelta(m),cls:'due',mins:m};
+    if(m===0)return {key:'due',label:'即将到期',cls:'due',mins:0};
+    if(m<=60)return {key:'due',label:'剩'+humanDelta(m),cls:'due',mins:m};
+    return {key:'rented',label:'出租中',cls:'rented',mins:m};
+  }
+  const dt=days(today(),end);
+  if(dt<0)  return {key:'over',label:'已超期'+(-dt)+'天',cls:'due',days:dt};
+  if(dt===0)return {key:'due',label:'今天到期',cls:'due',days:0};
+  if(dt<=2) return {key:'due',label:dt+'天后到期',cls:'due',days:dt};
+  return {key:'rented',label:'出租中',cls:'rented',days:dt};
+}
+
+/* ---------- 渲染 ---------- */
+function render(){
+  document.getElementById('today').textContent=new Date().toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'});
+
+  // 统计
+  const total=DB.length;
+  const rent=DB.filter(a=>a.status==='rented').length;
+  const due=DB.filter(a=>{const s=statusOf(a);return s.key==='due'||s.key==='over'}).length;
+  const idle=DB.filter(a=>a.status!=='rented').length;
+  const pending=DB.filter(a=>{const t=taskTypes(a);return t.length&&todayDone(a)<t.length}).length;
+  document.getElementById('sTotal').textContent=total;
+  document.getElementById('sRent').textContent=rent;
+  document.getElementById('sDue').textContent=due;
+  document.getElementById('sTask').textContent=pending;
+  const el2=document.getElementById('sTask');
+  if(el2) el2.parentElement.className='stat '+(pending===0?'g':'a');
+
+  // 筛选chip
+  const fs=[['all','全部 '+total],['rented','出租中 '+rent],['idle','空闲 '+idle],
+            ['due','到期提醒 '+due],['task','任务待办 '+pending]];
+  document.getElementById('filters').innerHTML=fs.map(([k,l])=>
+    `<div class="chip ${filter===k?'on':''}" onclick="setFilter('${k}')">${l}</div>`).join('');
+
+  // 列表
+  const kw=document.getElementById('search').value.trim().toLowerCase();
+  let arr=DB.slice();
+  if(filter==='rented') arr=arr.filter(a=>a.status==='rented');
+  if(filter==='idle')   arr=arr.filter(a=>a.status!=='rented');
+  if(filter==='due')    arr=arr.filter(a=>{const s=statusOf(a);return s.key==='due'||s.key==='over'});
+  if(filter==='task')   arr=arr.filter(a=>{const t=taskTypes(a);return t.length&&todayDone(a)<t.length});
+  if(kw) arr=arr.filter(a=>[a.name,a.tenant,a.note,a.channel]
+    .some(v=>String(v||'').toLowerCase().includes(kw)));
+
+  // 排序：到期/超期优先 → 任务未完成优先 → 在租 → 空闲
+  const ord={over:0,due:1,rented:2,idle:3};
+  arr.sort((x,y)=>{
+    const ox=ord[statusOf(x).key], oy=ord[statusOf(y).key];
+    if(ox!==oy) return ox-oy;
+    const tx=(()=>{const t=taskTypes(x);return t.length&&todayDone(x)<t.length?0:1})();
+    const ty=(()=>{const t=taskTypes(y);return t.length&&todayDone(y)<t.length?0:1})();
+    if(tx!==ty) return tx-ty;
+    const ex=parse(x.end), ey=parse(y.end);
+    if(ex&&ey) return ex-ey;
+    return String(x.name).localeCompare(String(y.name));
+  });
+
+  const el=document.getElementById('list');
+  if(!DB.length){
+    el.innerHTML=`<div class="acct empty"><div class="big">📱</div>
+      还没有账号<br>点右下角 <b style="color:var(--blue)">+</b> 添加第一个</div>`;
+  }else if(!arr.length){
+    el.innerHTML=`<div class="emptyhint">没有符合条件的账号</div>`;
+  }else{
+    el.innerHTML=arr.map(card).join('');
+  }
+  renderIncome();
+}
+
+function card(a){
+  const st=statusOf(a);
+  let bar='',prog='';
+  if(a.status==='rented'&&a.start&&a.end){
+    let tot,used;
+    if(isHour(a)){
+      // 按分钟计算，更精确
+      const s=parseDT(a.start),e=parseDT(a.end),n=nowMin();
+      tot=Math.max(Math.round((e-s)/60000),1);
+      used=Math.min(Math.max(Math.round((n-s)/60000),0),tot);
+    }else{
+      const s=parse(a.start),e=parse(a.end);
+      tot=days(s,e)||1;
+      used=Math.min(Math.max(days(s,today()),0),tot);
+    }
+    const p=Math.round(used/tot*100);
+    const cls=st.key==='over'||st.key==='due'?'o':(p>75?'w':'');
+    bar=`<div class="bar"><i class="${cls}" style="width:${p}%"></i></div>`;
+    prog=`<div class="row"><span class="k">租期进度</span><span class="v">${p}%</span></div>`;
+  }
+  const tagCls=st.key==='idle'?'':(st.key==='rented'?'r':'d');
+
+  let body='';
+  if(a.status==='rented'){
+    body=`
+      <div class="row"><span class="k">租客</span><span class="v">${esc(a.tenant)||'—'}</span></div>
+      <div class="row"><span class="k">租期</span><span class="v">${rentRange(a)}</span></div>
+      ${bar}${prog}
+      ${a.price?`<div class="row"><span class="k">租金</span><span class="v money">${money(a.price)}</span></div>`:''}
+      ${a.deposit?`<div class="row"><span class="k">押金</span><span class="v">${money(a.deposit)}</span></div>`:''}`;
+  }else{
+    body=`<div class="row"><span class="k">当前</span><span class="v" style="color:var(--sub)">未出租</span></div>`;
+    if(a.price) body+=`<div class="row"><span class="k">参考租金</span><span class="v money">${money(a.price)}</span></div>`;
+  }
+  const copyBtnHTML=`<span class="copybtn" onclick="copyAcc('${a.id}')">复制</span>`;
+  let copied=false;
+  if(a.pwd){ body+=`<div class="row"><span class="k">密码</span><span class="v">${esc(a.pwd)}${copyBtnHTML}</span></div>`; copied=true; }
+  if(a.phone){ body+=`<div class="row"><span class="k">手机</span><span class="v">${esc(a.phone)}${copied?'':copyBtnHTML}</span></div>`; }
+  body+=scoreRow(a);
+  if(a.channel) body+=`<div class="row"><span class="k">渠道</span><span class="v" style="color:var(--sub)">${esc(a.channel)}</span></div>`;
+  if(a.note) body+=`<div class="row"><span class="k">备注</span><span class="v" style="color:var(--sub);font-weight:400">${esc(a.note)}</span></div>`;
+
+  const mainBtn = a.status==='rented'
+    ? `<button onclick="openRent('${a.id}')">续租 / 改期</button><button onclick="endRent('${a.id}')">收回账号</button>`
+    : `<button onclick="openRent('${a.id}')">登记出租</button>`;
+
+  return `
+  <div class="acct ${st.cls}">
+    <div class="ahead">
+      <div>
+        <div class="aname">${esc(a.name)}
+          <span class="tag ${tagCls}">${st.label}</span>
+          ${packTag(a)}
+        </div>
+      </div>
+      <button class="amen" onclick="openEdit('${a.id}')">✎</button>
+    </div>
+    <div class="ainfo">${body}</div>
+    ${taskPanel(a)}
+    <div class="aops">
+      ${mainBtn}
+      <button class="del" onclick="delAcct('${a.id}')">删除</button>
+    </div>
+  </div>`;
+}
+
+// 配置提醒标签（标配/满配，可自定义文字）
+function packTag(a){
+  const p=a.pack||'';
+  if(!p) return `<span class="packtag none" onclick="editPack('${a.id}')">+ 配置</span>`;
+  const cls=p==='标配'?'std':(p==='满配'?'full':'custom');
+  return `<span class="packtag ${cls}" onclick="editPack('${a.id}')">${esc(p)}</span>`;
+}
+function editPack(id){
+  const a=DB.find(x=>x.id===id);
+  if(!a)return;
+  const v=prompt('配置类型（可自由填写，如：标配 / 满配 / 自定义说明）\n留空则清除',a.pack||'');
+  if(v===null)return;
+  a.pack=v.trim();
+  a.updated=Date.now();
+  save();render();
+  toast(a.pack?('已设为「'+a.pack+'」'):'已清除配置标记');
+}
+
+// 租期显示：按天的只显示日期，按小时的显示日期+时间
+function rentRange(a){
+  if(!a.start&&!a.end)return '—';
+  if(isHour(a)){
+    const s=parseDT(a.start),e=parseDT(a.end);
+    const f=d=>d? (d.getMonth()+1)+'/'+d.getDate()+' '+hhmm(d) : '—';
+    return f(s)+' → '+f(e)+`<span style="color:var(--sub);font-weight:400"> （${hourLen(a)}）</span>`;
+  }
+  return (esc(a.start)||'—')+' → '+(esc(a.end)||'—');
+}
+function hourLen(a){
+  const s=parseDT(a.start),e=parseDT(a.end);
+  if(!s||!e)return '';
+  const m=Math.round((e-s)/60000);
+  const h=Math.floor(m/60), mm=m%60;
+  return h? (h+'小时'+(mm?mm+'分':'')) : (mm+'分钟');
+}
+
+// 任务勾选切换（纯状态驱动，稳定可靠）
+function toggleTaskPick(el){
+  const on=el.dataset.on!=='1';
+  el.dataset.on=on?'1':'0';
+  el.classList.toggle('on',on);
+}
+
+// 游戏分数行：显示当前分数 + 相比前一次的变化，可直接填报
+function scoreRow(a){
+  const cur=a.score||'';
+  let delta='',deltaCls='';
+  if(cur!=='' && a.prevScore!==undefined && a.prevScore!=='' && !isNaN(cur) && !isNaN(a.prevScore)){
+    const d=Number(cur)-Number(a.prevScore);
+    if(d!==0){
+      delta=(d>0?' ↑':' ↓')+Math.abs(d);
+      deltaCls=d>0?'color:var(--green)':'color:var(--red)';
+    }
+  }
+  return `<div class="row" style="align-items:center">
+    <span class="k">游戏分数</span>
+    <span class="v" style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end">
+      ${cur!==''?`<span class="scoreval">${esc(cur)}${delta?`<span style="font-size:11px;${deltaCls}">${delta}</span>`:''}</span>`:''}
+      <input class="scoreedit" id="sc_${a.id}" value="${esc(cur)}" placeholder="填入分数"
+        inputmode="decimal" style="max-width:110px">
+      <button class="scoresub" onclick="saveScore('${a.id}')">记录</button>
+    </span>
+  </div>`;
+}
+function saveScore(id){
+  const a=DB.find(x=>x.id===id);
+  if(!a)return;
+  const box=document.getElementById('sc_'+id);
+  const v=(box.value||'').trim();
+  if(v===a.score){toast('分数未变化');return}
+  a.prevScore=a.score===undefined?'':a.score;
+  a.score=v;
+  if(v!=='' && !a.scoreHistory) a.scoreHistory=[];
+  if(v!==''){
+    a.scoreHistory=a.scoreHistory||[];
+    a.scoreHistory.push({d:fmt(today())+' '+hhmm(nowMin()),v});
+    if(a.scoreHistory.length>30) a.scoreHistory=a.scoreHistory.slice(-30);
+  }
+  a.updated=Date.now();
+  save();render();
+  toast(v===''?'已清除分数':('分数已记录：'+v));
+}
+
+// 每日任务面板
+function taskPanel(a){
+  const types=taskTypes(a);
+  if(!types.length){
+    return `<div class="taskbar"><span>未启用每日任务</span>
+      <span class="reset" onclick="openEdit('${a.id}')">去设置</span></div>`;
+  }
+  const day=fmt(today());
+  const doneN=todayDone(a);
+  const allDone=doneN===types.length;
+  const sk=streak(a);
+  const dateLabel=new Date().toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})+' 任务';
+  const cards=types.map(t=>{
+    const d=isDone(a,t.key,day);
+    const cls=d?'done':(allDone?'done':'todo');
+    return `<div class="tcard ${cls}" onclick="toggleTask('${a.id}','${t.key}')">
+      <div class="tn">${d?'✓ ':'○ '}${t.name}</div>
+      <div class="ts"><span class="dot"></span>${d?'已完成':'待完成'}</div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="taskbar">
+      <span>${dateLabel} · <b>${doneN}/${types.length}</b>${allDone?' 全部完成 🎉':''}</span>
+      <span>${sk>0?'连续 '+sk+' 天':''}</span>
+    </div>
+    <div class="taskpanel">${cards}</div>
+    <div style="padding:4px 14px 12px;font-size:11.5px;color:var(--sub)">
+      点击卡片切换完成状态 · 每天自动重置
+    </div>`;
+}
+
+
+function renderIncome(){
+  const now=new Date();
+  const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  let month=0, prepaid=0;
+  DB.forEach(a=>{
+    if(a.status==='rented'&&a.start&&a.start.startsWith(ym)) month+=Number(a.price)||0;
+    if(a.status==='rented') prepaid+=Number(a.price)||0;
+  });
+  document.getElementById('incomeCard').innerHTML=`
+    <div class="acct" style="border-left-color:var(--blue);margin-top:11px">
+      <div class="ainfo" style="padding:13px 14px">
+        <div class="row"><span class="k">本月起租收入</span><span class="v money">${money(month)}</span></div>
+        <div class="row"><span class="k">在租合计（未到期）</span><span class="v money">${money(prepaid)}</span></div>
+      </div>
+    </div>`;
+}
+
+/* ---------- 交互 ---------- */
+function setFilter(f){filter=f;render()}
+document.getElementById('search').addEventListener('input',render);
+
+function toggleRentFields(){
+  const on=document.getElementById('fStatus').value==='rented';
+  document.getElementById('rentFields').style.display=on?'block':'none';
+}
+function closeAll(){document.querySelectorAll('.mask').forEach(m=>m.classList.remove('on'))}
+function openData(){
+  closeAll();
+  renderSyncUI();
+  loadGistCfgToUI();
+  const w=document.getElementById('warnLocal');
+  if(w) w.style.display=(cloudOn()&&getRoom())?'none':'block';
+  document.getElementById('mData').classList.add('on');
+}
+
+function openEdit(id){
+  closeAll();
+  editId=id;
+  const a=id?DB.find(x=>x.id===id):null;
+  document.getElementById('editTitle').textContent=a?'编辑账号':'新增账号';
+  document.getElementById('fName').value=a?a.name||'':'';
+  document.getElementById('fPwd').value=a?a.pwd||'':'';
+  document.getElementById('fPhone').value=a?a.phone||'':'';
+  document.getElementById('fPrice').value=a?a.price||'':'';
+  document.getElementById('fDeposit').value=a?a.deposit||'':'';
+  document.getElementById('fStatus').value=a?a.status||'idle':'idle';
+  document.getElementById('fTenant').value=a?a.tenant||'':'';
+  // 按天租的账号在此处只维护日期；按小时租的租期请在卡片上点“续租/改期”维护
+  document.getElementById('fStart').value=a?(a.start||'').split('T')[0]:'';
+  document.getElementById('fEnd').value=a?(a.end||'').split('T')[0]:'';
+  document.getElementById('fChannel').value=a?a.channel||'':'';
+  document.getElementById('fNote').value=a?a.note||'':'';
+  // 任务勾选：用 data-on 记录状态，不依赖 checkbox（避免浏览器默认行为与样式不同步）
+  const cur=a ? (a.taskTypes||TASK_TYPES.filter(t=>t.def).map(t=>t.key))
+              : TASK_TYPES.filter(t=>t.def).map(t=>t.key);
+  document.getElementById('fTasks').innerHTML=TASK_TYPES.map(t=>{
+    const on=cur.includes(t.key);
+    return `<label class="tp${on?' on':''}" data-key="${t.key}" data-on="${on?1:0}"
+      onclick="toggleTaskPick(this)">${t.name}</label>`;
+  }).join('');
+  toggleRentFields();
+  document.getElementById('mEdit').classList.add('on');
+}
+
+function saveAcct(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){toast('请填写账号名称');return}
+  const status=document.getElementById('fStatus').value;
+  const picked=[...document.querySelectorAll('#fTasks .tp')].filter(l=>l.dataset.on==='1').map(l=>l.dataset.key);
+  const prev = editId ? DB.find(x=>x.id===editId) : null;
+  const o={
+    id: editId||uid(),
+    name,
+    pwd: document.getElementById('fPwd').value.trim(),
+    phone: document.getElementById('fPhone').value.trim(),
+    status,
+    unit:(prev&&prev.unit)||'day',
+    taskTypes:picked,
+    tenant: status==='rented'?document.getElementById('fTenant').value.trim():'',
+    // 按小时租的账号，租期由“续租/改期”维护，此处编辑不覆盖其时间
+    start: status==='rented' ? (prev&&isHour(prev) ? prev.start : document.getElementById('fStart').value) : '',
+    end:   status==='rented' ? (prev&&isHour(prev) ? prev.end   : document.getElementById('fEnd').value)   : '',
+    price:  document.getElementById('fPrice').value,
+    deposit:document.getElementById('fDeposit').value,
+    channel:document.getElementById('fChannel').value.trim(),
+    note:document.getElementById('fNote').value.trim(),
+    updated:Date.now()
+  };
+  if(editId){
+    const i=DB.findIndex(x=>x.id===editId);
+    o.tasks=DB[i].tasks||{};           // 保留历史任务记录
+    o.score=DB[i].score;               // 保留游戏分数
+    o.prevScore=DB[i].prevScore;
+    o.scoreHistory=DB[i].scoreHistory;
+    o.pack=DB[i].pack;                 // 保留配置标签
+    DB[i]=o;
+  }else{
+    o.tasks={};
+    o.score='';
+    o.pack='';
+    DB.push(o);
+  }
+  save();closeAll();render();
+  // 新建账号且填了密码：保存后立即自动复制账密
+  if(!editId && (o.pwd||o.phone)){
+    copyText(buildCopyText(o),'✓ 已保存，信息已复制');
+  }else{
+    toast(editId?'已更新':'已添加');
+  }
+}
+
+// 计费方式切换（出租弹窗内）
+let rentUnit='day';
+function setUnit(u){
+  const prev=rentUnit;
+  rentUnit=u;
+  document.getElementById('uDay').classList.toggle('on',u==='day');
+  document.getElementById('uHour').classList.toggle('on',u==='hour');
+  document.getElementById('dayRow').style.display=u==='day'?'grid':'none';
+  document.getElementById('hourRow').style.display=u==='hour'?'block':'none';
+  // 从按天切到按小时：重设为「现在起 12 小时」，避免沿用日租的日期
+  if(u==='hour'&&prev!=='hour'){
+    const n=nowMin();
+    const e=new Date(n.getTime()+12*3600000);
+    document.getElementById('rStartD').value=fmt(n);
+    document.getElementById('rStartT').value=hhmm(n);
+    document.getElementById('rEndD').value=fmt(e);
+    document.getElementById('rEndT').value=hhmm(e);
+  }
+  // 从按小时切到按天：按小时终点取日期
+  if(u==='day'&&prev==='hour'){
+    const s=composeHour('start'),e=composeHour('end');
+    if(s&&e){
+      document.getElementById('rStart').value=fmt(s);
+      document.getElementById('rEnd').value=fmt(e);
+    }
+  }
+}
+// 快捷时长：从起租时间往后推 n 小时
+function quickHour(n){
+  const s=composeHour('start');
+  const base=s||nowMin();
+  const e=new Date(base.getTime()+n*3600000);
+  document.getElementById('rEndD').value=fmt(e);
+  document.getElementById('rEndT').value=hhmm(e);
+  if(!s){ document.getElementById('rStartD').value=fmt(base);
+          document.getElementById('rStartT').value=hhmm(base); }
+}
+function hhmm(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function composeHour(which){
+  const d=document.getElementById(which==='start'?'rStartD':'rEndD').value;
+  const t=document.getElementById(which==='start'?'rStartT':'rEndT').value||'00:00';
+  if(!d)return null;
+  const [Y,M,D]=d.split('-').map(Number);
+  const [h,m]=t.split(':').map(Number);
+  return new Date(Y,M-1,D,h||0,m||0);
+}
+
+function openRent(id){
+  closeAll();
+  rentId=id;
+  const a=DB.find(x=>x.id===id);
+  document.getElementById('rentWho').textContent='账号：'+a.name;
+  document.getElementById('rTenant').value=a.tenant||'';
+  const t=today(), n=nowMin();
+  // 默认按小时出租（12 小时）；已有租约的账号沿用其原来的计费方式
+  const unit=isHour(a)?'hour':(a.status==='rented'&&a.unit==='day'?'day':'hour');
+  rentUnit='';           // 先清空，确保 setUnit 能触发默认值初始化
+  setUnit(unit);
+  if(unit==='hour'){
+    const s=a.start?parseDT(a.start):n;
+    const e=a.end?parseDT(a.end):new Date(n.getTime()+12*3600000);
+    document.getElementById('rStartD').value=fmt(s);
+    document.getElementById('rStartT').value=hhmm(s);
+    document.getElementById('rEndD').value=fmt(e);
+    document.getElementById('rEndT').value=hhmm(e);
+    // 同步日租字段，避免切换回来为空
+    document.getElementById('rStart').value=fmt(s);
+    document.getElementById('rEnd').value=fmt(e);
+  }else{
+    document.getElementById('rStart').value=a.start||fmt(t);
+    document.getElementById('rEnd').value=a.end||fmt(new Date(t.getTime()+6*86400000));
+    document.getElementById('rStartD').value=document.getElementById('rStart').value;
+    document.getElementById('rStartT').value=hhmm(n);
+    document.getElementById('rEndD').value=document.getElementById('rEnd').value;
+    document.getElementById('rEndT').value=hhmm(n);
+  }
+  document.getElementById('mRent').classList.add('on');
+}
+function saveRent(){
+  const a=DB.find(x=>x.id===rentId);
+  a.tenant=document.getElementById('rTenant').value.trim();
+  if(rentUnit==='hour'){
+    const s=composeHour('start'), e=composeHour('end');
+    if(!s){toast('请填写起租时间');return}
+    if(!e){toast('请填写到期时间');return}
+    if(e<=s){toast('到期时间需晚于起租时间');return}
+    a.unit='hour';
+    a.start=fmt(s)+'T'+hhmm(s);
+    a.end  =fmt(e)+'T'+hhmm(e);
+  }else{
+    a.unit='day';
+    a.start=document.getElementById('rStart').value;
+    a.end  =document.getElementById('rEnd').value;
+    if(!a.end){toast('请填写到期日');return}
+    if(a.start&&a.end<a.start){toast('到期日需晚于起租日');return}
+  }
+  a.status='rented';
+  a.updated=Date.now();
+  save();closeAll();render();
+  toast(rentUnit==='hour'?'已登记出租（按小时）':'已登记出租');
+}
+function endRent(id){
+  const a=DB.find(x=>x.id===id);
+  if(!confirm(`确认收回「${a.name}」？\n租客信息会清空，账号转为空闲。`))return;
+  a.status='idle';a.tenant='';a.start='';a.end='';a.unit='day';a.deposit='';a.updated=Date.now();
+  save();render();toast('已收回，账号空闲');
+}
+function delAcct(id){
+  const a=DB.find(x=>x.id===id);
+  if(!confirm(`删除账号「${a.name}」？此操作不可恢复。`))return;
+  DB=DB.filter(x=>x.id!==id);save();render();toast('已删除');
+}
+
+/* ---------- 一键复制账密（三级降级，保证可用） ---------- */
+// 动态格式：账：xxx，密：xxx，手机：xxx（没填的项自动跳过）
+function buildCopyText(a){
+  let s=`账：${a.name}`;
+  if(a.pwd)   s+=`，密：${a.pwd}`;
+  if(a.phone) s+=`，手机：${a.phone}`;
+  return s;
+}
+function copyAcc(id){
+  const a=DB.find(x=>x.id===id);
+  if(!a)return;
+  copyText(buildCopyText(a));
+}
+// 一级：系统剪贴板 API；二级：兼容 execCommand；三级：弹窗全选手动复制
+function copyText(txt,okMsg){
+  const ok=()=>toast(okMsg||'✓ 已复制，可直接粘贴');
+  // 非 HTTPS/文件预览环境 clipboard API 大概率被拒，直接走兼容路径
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(ok).catch(()=>legacyCopy(txt,ok));
+  }else legacyCopy(txt,ok);
+}
+function legacyCopy(txt,ok){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=txt;
+    ta.setAttribute('readonly','');
+    // 关键：不能 opacity:0 / display:none，iOS 会拒绝复制；保留极淡可见 + 屏幕内
+    ta.style.cssText='position:fixed;top:0;left:0;width:12px;height:12px;font-size:16px;opacity:.01;border:none;padding:0;z-index:-1';
+    document.body.appendChild(ta);
+    const sel=window.getSelection();
+    const range=document.createRange();
+    range.selectNodeContents(ta);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    ta.setSelectionRange(0,txt.length);
+    ta.focus();
+    const okExec=document.execCommand('copy');
+    document.body.removeChild(ta);
+    if(okExec){ok();return}
+  }catch(e){}
+  manualCopy(txt);
+}
+// 三级兜底：弹窗显示文本并自动全选，长按调系统复制菜单
+function manualCopy(txt){
+  closeAll();
+  const box=document.getElementById('copyBox');
+  box.value=txt;
+  document.getElementById('mCopy').classList.add('on');
+  setTimeout(()=>{box.focus();box.select();box.setSelectionRange(0,txt.length)},250);
+}
+function selectCopyBox(){
+  const box=document.getElementById('copyBox');
+  box.focus();box.select();box.setSelectionRange(0,box.value.length);
+  toast('已全选，长按选“复制”');
+}
+
+/* ---------- 备份码（免文件的导入导出） ---------- */
+// 生成：精简字段 + JSON，配合前缀校验，适合微信直接发文字
+function makeCode(){
+  if(!DB.length){toast('暂无数据');return}
+  const payload={v:1,d:DB};
+  let code='';
+  try{
+    // 优先压缩（体积可减少 60% 以上），失败则用原始 JSON
+    const s=JSON.stringify(payload);
+    code=compressToBase64(s);
+  }catch(e){code='RAW:'+JSON.stringify(payload)}
+  const box=document.getElementById('codeBox');
+  box.value=code;
+  document.getElementById('codeOut').style.display='block';
+  box.focus();box.select();
+  localStorage.setItem('last_backup',Date.now());
+  toast(`已生成备份码（${DB.length}个账号，${code.length}字符）`);
+}
+function copyCode(){
+  const v=document.getElementById('codeBox').value;
+  if(!v){toast('请先生成备份码');return}
+  copyText(v,'✓ 备份码已复制');
+}
+function importCode(){
+  const raw=document.getElementById('codeIn').value.trim();
+  if(!raw){toast('请先粘贴备份码');return}
+  // 切到数据管理弹窗的导入流程需要用户确认；先取当前数据做覆盖判断
+  if(DB.length&&!confirm(`导入将覆盖当前 ${DB.length} 条数据，确定？`))return;
+  try{
+    let json;
+    if(raw.startsWith('RAW:')){ json=JSON.parse(raw.slice(4)); }
+    else{
+      const s=decompressFromBase64(raw);
+      json=JSON.parse(s);
+    }
+    const arr=Array.isArray(json)?json:(json.d||json.data);
+    if(!Array.isArray(arr))throw new Error('结构不对');
+    DB=arr.map(x=>({...x,id:x.id||uid()}));
+    save();closeAll();render();
+    toast(`✓ 已导入 ${DB.length} 个账号`);
+  }catch(e){
+    toast('备份码无法识别，请确认复制完整');
+  }
+}
+// 轻量压缩：把重复的键名替换为短代号（不做真实压缩，避免依赖）
+function compressToBase64(s){
+  const dict=[['status','s'],['tenant','t'],['start','a'],['end','b'],['unit','u'],
+    ['taskTypes','y'],['tasks','k'],['price','p'],['deposit','o'],['channel','c'],
+    ['note','n'],['updated','w'],['phone','h'],['pwd','q'],['name','m']];
+  let out=s;
+  // 用占位符替换，避免误伤值内容
+  dict.forEach(([long,short],i)=>{ out=out.split('"'+long+'":').join('"'+short+'":'); });
+  // 转义为可安全传输的 base64
+  return btoa(unescape(encodeURIComponent('C1'+out)));
+}
+function decompressFromBase64(code){
+  const s=decodeURIComponent(escape(atob(code)));
+  if(!s.startsWith('C1'))throw new Error('前缀不对');
+  let out=s.slice(2);
+  const dict=[['s','status'],['t','tenant'],['a','start'],['b','end'],['u','unit'],
+    ['y','taskTypes'],['k','tasks'],['p','price'],['o','deposit'],['c','channel'],
+    ['n','note'],['w','updated'],['h','phone'],['q','pwd'],['m','name']];
+  dict.forEach(([short,long])=>{ out=out.split('"'+short+'":').join('"'+long+'":'); });
+  return out;
+}
+
+/* ---------- 导入导出 ---------- */
+function download(name,content,type){
+  const b=new Blob([content],{type:type});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement('a');
+  a.href=u;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+function exportJSON(){
+  download(`租号台账_${fmt(today())}.json`,
+    JSON.stringify({v:1,exportAt:new Date().toISOString(),data:DB},null,2),
+    'application/json');
+  localStorage.setItem('last_backup',Date.now());
+  toast('已导出，发给合伙人导入即可');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const j=JSON.parse(ev.target.result);
+      const arr=Array.isArray(j)?j:j.data;
+      if(!Array.isArray(arr))throw 0;
+      if(DB.length&&!confirm(`导入将覆盖当前 ${DB.length} 条数据，确定？`)){e.target.value='';return}
+      DB=arr.map(x=>({...x,id:x.id||uid()}));
+      save();closeAll();render();toast(`已导入 ${DB.length} 个账号`);
+    }catch(err){toast('文件格式不正确')}
+    e.target.value='';
+  };
+  r.readAsText(f);
+}
+function exportCSV(){
+  const day=fmt(today());
+  const head=['账号','密码','手机号','状态','租客','起租日','到期日','租金','押金','渠道',
+              '今日任务完成','启用任务','连续天数','备注'];
+  const rows=DB.map(a=>{
+    const types=taskTypes(a);
+    const doneTxt=types.length? (types.filter(t=>isDone(a,t.key,day)).map(t=>t.name).join('/')||'无') : '未启用';
+    return [a.name,a.pwd||'',a.phone||'',
+      a.status==='rented'?'出租中':'空闲',
+      a.tenant,a.start,a.end,a.price,a.deposit,a.channel,
+      types.length? todayDone(a)+'/'+types.length : '—',
+      types.map(t=>t.name).join('/'),
+      streak(a)||'',
+      a.note];
+  });
+  const csv=[head,...rows].map(r=>r.map(c=>{
+    const s=String(c==null?'':c);
+    return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+  }).join(',')).join('\r\n');
+  download(`租号台账_${day}.csv`,'\ufeff'+csv,'text/csv');
+  toast('已导出表格');
+}
+function clearAll(){
+  if(!DB.length){toast('暂无数据');return}
+  if(!confirm(`确认清空全部 ${DB.length} 条数据？建议先导出备份。`))return;
+  DB=[];save();closeAll();render();toast('已清空');
+}
+
+/* 点击遮罩关闭 */
+document.querySelectorAll('.mask').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')});
+});
+
+/* ---------- Gist 云同步（跨设备共享编辑） ---------- */
+const G_ID='gist_id', G_TK='gist_token', G_NM='gist_name', G_LW='gist_lastwrite';
+let gistTimer=null, gistBusy=false;
+
+function gistCfg(){
+  return {
+    id:(localStorage.getItem(G_ID)||'').trim(),
+    tk:(localStorage.getItem(G_TK)||'').trim(),
+    nm:(localStorage.getItem(G_NM)||'设备-'+DEV_ID).trim()
+  };
+}
+function saveGistCfg(){
+  const id=(document.getElementById('gistId').value||'').trim();
+  const tk=(document.getElementById('gistToken').value||'').trim();
+  const nm=(document.getElementById('gistName').value||'').trim();
+  localStorage.setItem(G_ID,id);
+  localStorage.setItem(G_TK,tk);
+  if(nm)localStorage.setItem(G_NM,nm);
+  setGistStatus(id&&tk?'配置已保存，可点“上传/拉取”':'请填写完整');
+}
+function loadGistCfgToUI(){
+  const c=gistCfg();
+  const a=document.getElementById('gistId'), b=document.getElementById('gistToken'), n=document.getElementById('gistName');
+  if(a)a.value=c.id;
+  if(b)b.value=c.tk;
+  if(n)n.value=c.nm;
+}
+function setGistStatus(t){const el=document.getElementById('gistStatus');if(el)el.textContent=t}
+
+function gistApi(method,body){
+  const c=gistCfg();
+  if(!c.id||!c.tk)return Promise.reject(new Error('未配置 Gist ID 或 Token'));
+  return fetch('https://api.github.com/gists/'+c.id,{
+    method,
+    headers:{'Authorization':'Bearer '+c.tk,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+    body:body?JSON.stringify(body):undefined
+  }).then(r=>{
+    if(!r.ok)return r.text().then(t=>{throw new Error('GitHub 返回 '+r.status)});
+    return r.json();
+  });
+}
+
+// 上传
+function gistPush(manual){
+  if(gistBusy)return;
+  const c=gistCfg();
+  if(!c.id||!c.tk){if(manual)setGistStatus('请先填写 Gist ID 和 Token');return}
+  gistBusy=true;
+  const now=Date.now();
+  const payload={
+    lastWrite:now, by:c.nm, data:DB
+  };
+  setGistStatus('上传中…');
+  gistApi('PATCH',{files:{'rent.json':{content:JSON.stringify(payload,null,1)}}})
+    .then(()=>{
+      localStorage.setItem(G_LW,String(now));
+      setGistStatus('✓ 已上传（'+DB.length+' 个账号）');
+      if(manual)toast('✓ 已上传到云端');
+    })
+    .catch(e=>{setGistStatus('上传失败：'+e.message);if(manual)toast('上传失败：'+e.message)})
+    .finally(()=>{gistBusy=false});
+}
+
+// 拉取
+function gistPull(manual){
+  if(gistBusy)return;
+  const c=gistCfg();
+  if(!c.id||!c.tk){if(manual)setGistStatus('请先填写 Gist ID 和 Token');return}
+  gistBusy=true;
+  setGistStatus('拉取中…');
+  gistApi('GET')
+    .then(j=>{
+      const f=j.files&&j.files['rent.json'];
+      if(!f||!f.content){setGistStatus('云端还是空的，可先“上传”一次');return}
+      let p;
+      try{p=JSON.parse(f.content)}catch(e){setGistStatus('云端内容格式错误');return}
+      const arr=p.data||[];
+      const remoteLW=Number(p.lastWrite)||0;
+      const localLW=Number(localStorage.getItem(G_LW)||0);
+      if(!arr.length){setGistStatus('云端暂无数据');return}
+      // 本地为空直接接收
+      const takeIt = !DB.length || remoteLW>localLW;
+      if(takeIt){
+        DB=arr.map(x=>({...x,id:x.id||uid()}));
+        localStorage.setItem(G_LW,String(remoteLW));
+        save();render();
+        setGistStatus('✓ 已同步最新数据（'+DB.length+' 个账号）'+(p.by?' · 来自 '+p.by:''));
+        if(manual)toast('✓ 已更新到最新（'+DB.length+' 个账号）');
+      }else{
+        setGistStatus('本地就是最新的（'+DB.length+' 个账号），如需覆盖云端请点“上传”');
+        if(manual)toast('本地已是最新');
+      }
+    })
+    .catch(e=>{setGistStatus('拉取失败：'+e.message);if(manual)toast('拉取失败：'+e.message)})
+    .finally(()=>{gistBusy=false});
+}
+
+// 自动同步开关
+function gistAuto(){
+  if(gistTimer){
+    clearInterval(gistTimer);gistTimer=null;
+    localStorage.removeItem('gist_auto');
+    document.getElementById('gistAutoBtn').textContent='开启自动同步';
+    setGistStatus('已关闭自动同步');
+    return;
+  }
+  const c=gistCfg();
+  if(!c.id||!c.tk){toast('请先填写 Gist ID 和 Token');return}
+  localStorage.setItem('gist_auto','1');
+  document.getElementById('gistAutoBtn').textContent='关闭自动同步';
+  setGistStatus('自动同步已开启（每 30 秒检查一次）');
+  gistPull(true);
+  gistTimer=setInterval(()=>gistPull(false),30000);
+}
+function initGist(){
+  loadGistCfgToUI();
+  if(localStorage.getItem('gist_auto')==='1'){
+    const c=gistCfg();
+    if(c.id&&c.tk){
+      gistTimer=setInterval(()=>gistPull(false),30000);
+      const btn=document.getElementById('gistAutoBtn');
+      if(btn)btn.textContent='关闭自动同步';
+      gistPull(false);
+    }
+  }
+}
+
+/* ---------- 云同步 ---------- */
+const ROOM_KEY='sync_room', DEV_KEY='sync_dev', LW_KEY='last_write';
+const DEV_ID=(()=>{let d=localStorage.getItem(DEV_KEY);
+  if(!d){d='dev'+Math.random().toString(36).slice(2,8);localStorage.setItem(DEV_KEY,d)}return d})();
+function cloudOn(){return location.protocol.startsWith('http')}
+function getRoom(){return localStorage.getItem(ROOM_KEY)||''}
+function lastWrite(){return Number(localStorage.getItem(LW_KEY)||0)}
+function touchWrite(){localStorage.setItem(LW_KEY,Date.now())}
+let syncState='—', pushTimer=null;
+
+function setSyncState(s){syncState=s;const el=document.getElementById('syncDot');if(el)el.textContent=s}
+function schedulePush(){
+  if(!cloudOn()||!getRoom())return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(pushData,800);
+}
+async function pushData(){
+  const room=getRoom();
+  if(!room||!navigator.onLine){setSyncState('离线');return}
+  setSyncState('同步中…');
+  try{
+    const r=await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({room,data:DB,lastWrite:Date.now(),by:DEV_ID})});
+    if(r.ok){setSyncState('已同步 ✓')}else setSyncState('同步失败');
+  }catch(e){setSyncState('同步失败')}
+}
+async function pullData(silent){
+  const room=getRoom();
+  if(!cloudOn()||!room)return;
+  try{
+    const r=await fetch('/api/data?room='+room);
+    const j=await r.json();
+    if(!j.found){
+      // 远端还没有数据：本地有数据就推上去
+      if(DB.length){pushData();return}
+      setSyncState('已连接');
+      return;
+    }
+    const remote=j.lastWrite||0, local=lastWrite();
+    const remoteN=(j.data||[]).length;
+    // 空设备保护：本地没有任何账号时，云端有就无条件接收
+    if(!DB.length && remoteN>0){
+      DB=(j.data||[]).map(x=>({...x,id:x.id||uid()}));
+      localStorage.setItem(LW_KEY,remote);
+      save();render();
+      if(!silent)toast('✓ 已从云端同步 '+remoteN+' 个账号');
+      setSyncState('已同步 ✓');
+      return;
+    }
+    if(remote>local && j.by!==DEV_ID){
+      DB=(j.data||[]).map(x=>({...x,id:x.id||uid()}));
+      localStorage.setItem(LW_KEY,remote);
+      save();render();
+      if(!silent)toast('✓ 已从云端同步 '+remoteN+' 个账号');
+      setSyncState('已同步 ✓');
+    }else if(remote<local){
+      pushData(); // 本地更新，推上去
+    }else setSyncState('已同步 ✓');
+  }catch(e){setSyncState('离线')}
+}
+function setRoom(){
+  const cur=getRoom();
+  const v=prompt('设置 6 位数字同步码（所有设备填同一码即可互相同步）：\n\n⚠️ 知道此码的人都能查看/修改数据，请勿外传。',cur||String(Math.floor(100000+Math.random()*900000)));
+  if(v===null)return;
+  const room=String(v).replace(/\D/g,'').slice(0,6);
+  if(room.length<4){toast('同步码至少 4 位数字');return}
+  localStorage.setItem(ROOM_KEY,room);
+  if(!localStorage.getItem(LW_KEY))localStorage.setItem(LW_KEY,0); // 归零以便拉取远端
+  renderSyncUI();
+  pullData(false);
+}
+function unbindRoom(){
+  if(!confirm('解除云同步？本机数据保留，只是不再与云端互相同步。'))return;
+  localStorage.removeItem(ROOM_KEY);
+  renderSyncUI();toast('已解除云同步');
+}
+function renderSyncUI(){
+  const box=document.getElementById('cloudBox');
+  if(!box)return;
+  if(!cloudOn()){
+    box.innerHTML='<div class="hint" style="margin:0">当前以本地文件方式打开，云同步不可用。请使用在线版链接。</div>';
+    return;
+  }
+  const room=getRoom();
+  box.innerHTML=room
+    ? `<div class="row" style="margin-bottom:8px"><span class="k">同步码</span><span class="v">${room}</span></div>
+       <div class="row" style="margin-bottom:10px"><span class="k">状态</span><span class="v" style="color:var(--green)">${syncState}</span></div>
+       <button class="submit gray" onclick="pullData(false)">立即拉取</button>
+       <button class="submit gray" style="margin-top:9px" onclick="unbindRoom()">解除绑定</button>
+       <div class="hint" style="margin:10px 0 0">修改数据后自动同步到云端；其他设备用同一同步码打开本页即可获取最新数据。</div>`
+    : `<div class="hint" style="margin:0 0 10px">绑定同步码后，数据自动上云；新设备打开本页填同一码即可同步，无需再手动导文件。</div>
+       <button class="submit" onclick="setRoom()">设置同步码（推荐）</button>`;
+}
+function initCloud(){
+  if(!cloudOn())return;
+  if(getRoom()){
+    setSyncState('连接中…');
+    pullData(true);
+    setInterval(()=>pullData(true),30000);
+  }
+}
+
+/* ---------- 启动 ---------- */
+load();
+const FIRST_RUN = !localStorage.getItem(KEY);
+if(FIRST_RUN){
+  // 不再自动塞示例数据，避免新设备打开时让人误以为数据被覆盖
+  // 注意：初始化不能走 save()（会刷新 last_write 时间戳，导致新设备误判自己比云端新）
+  DB=[];
+  localStorage.setItem(KEY,JSON.stringify(DB));
+}
+render();
+// 首次使用引导（云端版提示不同）
+if(FIRST_RUN && !DB.length){
+  setTimeout(()=>{
+    const msg = cloudOn()
+      ? '欢迎使用租号工作台 👋\n\n当前是在线版：设置同步码后，数据自动云端保存，换手机打开同一链接+同一码即可找回。\n\n现在开始录入第一个账号？'
+      : '欢迎使用租号工作台 👋\n\n重要提示：数据只存在这台手机的浏览器里。\n换手机 / 换浏览器 / 清理缓存都会看不到，请定期用右上角 ⇅ 导出备份。\n\n现在开始录入第一个账号？';
+    if(confirm(msg)) openEdit(null);
+  },400);
+}
+// 云同步初始化
+initCloud();
+// Gist 共享同步初始化
+initGist();
+// 备份提醒（云同步绑定时跳过）
+(function backupReminder(){
+  if(!DB.length)return;
+  if(cloudOn()&&getRoom())return;
+  const last=Number(localStorage.getItem('last_backup')||0);
+  const days3=3*86400000;
+  if(Date.now()-last>days3){
+    setTimeout(()=>{
+      if(confirm('⚠️ 已超过 3 天没有备份了。\n\n数据只存在本机，一旦误删或换设备就找不回。\n现在去导出备份吗？')){
+        openData();
+      }
+    },1200);
+  }
+})();
+</script>
+</body>
+</html>
